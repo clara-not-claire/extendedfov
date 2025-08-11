@@ -1,0 +1,13 @@
+psfname: '/Users/clarahung/repos/extendedfov/ADMM-refactor/psf_3000.0_img_2_cam_1_rml.tiff'
+# '/Users/clarahung/Desktop/COSI/psf_rml_taped.tiff' #path to psf image
+imgname: '/Users/clarahung/repos/extendedfov/ADMM-refactor/img_64_cam_1.tiff'
+# '/Users/clarahung/repos/extendedfov/7-19-25/fwd/berk-rml-taped-psf-measurement.png' #path to raw data image file
+gtname: '/Users/clarahung/repos/extendedfov/ADMM-refactor/warped_undistorted_img_64_cam_2.tiff'
+resultpath: '/Users/clarahung/repos/extendedfov/ADMM-refactor/8-9-25-run1'
+f: 0.25 #Downsampling factor (must be decimal, must be of form 1/2^k where k is positive integer)
+disp_pic: 4 #Number of iterations after which we display intermediate reconstruction
+mu1: 1e-3 #Decimal point is REQUIRED if using scientific notation
+mu2: 1e-2
+mu3: 1e-1
+tau: 1e-6
+iters: 5
