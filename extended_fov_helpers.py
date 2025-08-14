@@ -96,8 +96,8 @@ def center_crop(img, dim=(0, 0)):
 
 
 def forward(img, psf, psf_name='psf', gray=False, name='', save_path='.', crop=True):
-    print("Input Image Dim: ", img.shape)
-    print("PSF Dim: ", psf.shape)
+    # print("Input Image Dim: ", img.shape)
+    # print("PSF Dim: ", psf.shape)
     if len(img.shape) > 2:
         img = img[:, :, 0:3]
 
@@ -114,12 +114,13 @@ def forward(img, psf, psf_name='psf', gray=False, name='', save_path='.', crop=T
     # # if resize:
     # #     img_padded = resize(img_padded, (resize, resize, 3), anti_aliasing=True)
     
+    ## TODO: convolve 2d
     if gray:
         if len(img_padded.shape) > 2:
             img_padded = color.rgb2gray(img_padded)
         if len(psf.shape) > 2:
             psf = color.rgb2gray(psf)
-        convolved_img = convolve_mono(img_padded, psf)
+        convolved_img = convolve_mono(img_padded, psf, mode='valid')
     else:
         convolved_img = convolve_rgb(img_padded, psf)
     if crop:
@@ -129,11 +130,11 @@ def forward(img, psf, psf_name='psf', gray=False, name='', save_path='.', crop=T
 
     cropped_img = cropped_img / np.max(cropped_img)
 
-    print(np.min(cropped_img), np.max(cropped_img))
+    # print(np.min(cropped_img), np.max(cropped_img))
 
-    print("Padded Image Dim: ", img_padded.shape)
-    print("Convolved Image Dim: ", convolved_img.shape)
-    print("Cropped Image Dim: ", cropped_img.shape)
+    # print("Padded Image Dim: ", img_padded.shape)
+    # print("Convolved Image Dim: ", convolved_img.shape)
+    # print("Cropped Image Dim: ", cropped_img.shape)
     f_name = f'{name}-{psf_name}-measurement'
 
     # if not os.path.exists(save_path):
@@ -145,7 +146,7 @@ def forward(img, psf, psf_name='psf', gray=False, name='', save_path='.', crop=T
     np.save(img_save_path, cropped_img)
 
     plt.imsave(img_save_path_png, cropped_img)
-    print(f"Saved at {img_save_path}")
+    # print(f"Saved at {img_save_path}")
     return cropped_img, img_save_path, f_name
 
 def load(path, psf='./3-6-24_rml_mono8_3000.tiff', gray=True):
@@ -157,8 +158,8 @@ def load(path, psf='./3-6-24_rml_mono8_3000.tiff', gray=True):
         psf = plt.imread(psf)
     else:
         psf= plt.imread('./2-27-24_rml_rgb.tiff')
-    print("Ground Truth Shape:", img.shape)
-    print("PSF Shape:", psf.shape)
+    # print("Ground Truth Shape:", img.shape)
+    # print("PSF Shape:", psf.shape)
     # plt.figure()
     # plt.imshow(img, cmap='gray')
     # plt.title(f"Original Image {img.shape[:2]}")
@@ -362,9 +363,9 @@ def get_sensor_pct(sensor_dims):
 
 
 ## PSF GENERATION
-def check_coords(x, y, coords, r):
+def check_coords(x, y, coords, r, max):
     for i in range(len(x)):
-        if np.linalg.norm(np.array(coords) - np.array((x[i], y[i]))) < 2 * r + 25:
+        if np.linalg.norm(np.array(coords) - np.array((x[i], y[i]))) < 2 * r + max:
             return False
     return True
 
@@ -386,8 +387,8 @@ def plot_rml_irs(truncate, num_points, r, extent_h, extent_v, shape_h, shape_v, 
     for _ in range(num_points):
         dist_to_point = False
         while not dist_to_point:
-            coords = (random.randrange(250 - extent_h // 2, 250 + extent_h // 2, 4), random.randrange(250 - extent_v // 2, 250 + extent_v // 2, 4))           
-            dist_to_point = check_coords(x, y, coords, r)
+            coords = (random.randrange(shape_h//2 - extent_h // 2, shape_h//2  + extent_h // 2, 4), random.randrange(shape_h//2  - extent_v // 2, shape_h//2 + extent_v // 2, 4))           
+            dist_to_point = check_coords(x, y, coords, r, shape_h // 20)
         
         x.append(coords[0])
         y.append(coords[1])
@@ -399,7 +400,7 @@ def plot_rml_irs(truncate, num_points, r, extent_h, extent_v, shape_h, shape_v, 
     extent_v = np.max(y) - np.min(y)
 
     for (x,y) in zip(x, y):
-        blur = random.randrange(0, 20, 5) / 10
+        blur = random.randrange(0, shape_h//25, 5) / 10
         grid = np.full(shape, 0, np.uint8)
         rad = int(r + blur * 2)
         # print(blur, rad)

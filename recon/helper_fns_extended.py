@@ -14,53 +14,53 @@ def preprocess(psfname, imgname, f=8, gray_image=False, convert2gray = False, ps
         psf0 = np.load(psfname)
     else:
         psf0 = plt.imread(psfname)
-    print("PSF shape: ", psf0.shape)
-    print("Image shape: ", img.shape)
+    # print("PSF shape: ", psf0.shape)
+    # print("Image shape: ", img.shape)
     # print(np.min(psf0[:, :, 3]), np.max(psf0[:, :, 3]))
 
     # Rescale PSF if rescale factor is not zero
     if psf_scale != (0, 0):
         psf0 = resize(psf0, psf_scale, anti_aliasing=True)
-        print("Rescaled PSF by a factor of:", psf_scale)
+        # print("Rescaled PSF by a factor of:", psf_scale)
     
     if convert2gray:
         # img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         # psf0 = cv2.cvtColor(psf0, cv2.COLOR_RGB2GRAY)
         # gray_image = True
-        print("Converted RGB images to grayscale..")
+        # print("Converted RGB images to grayscale..")
 
         img = np.average(img, axis=2)
         psf0 = np.average(psf0, axis=2)
-        print("Gray Image Shape:", img.shape)
+        # print("Gray Image Shape:", img.shape)
 
     # if grayscale, tile image
     if img.ndim == 2:
         img = np.tile(img[..., np.newaxis], (1, 1, 3))
-        print("Tiled grayscale image to 3 channels..")
+        # print("Tiled grayscale image to 3 channels..")
     if psf0.ndim == 2:
         psf0 = np.tile(psf0[..., np.newaxis], (1, 1, 3))
-        print("Tiled PSF to 3 channels..")
-        print("tiled shape: ", psf0.shape)
+        # print("Tiled PSF to 3 channels..")
+        # print("tiled shape: ", psf0.shape)
 
     # background subtract PSF
     # 10/23/2023 for multi-color channels need to background subtract from PSF each channel separately
-    if not gray_image:
-        #bg = np.mean(psf0[:100, :100])
-        #psf0 = psf0 - bg
-        #img = img - bg
-        bg_channels = np.mean(psf0[:100, :100, :3], axis=(0, 1))
-        psf0 = psf0[:, :, :3] - bg_channels
+    # if not gray_image:
+    #     bg = np.mean(psf0[:100, :100])
+    #     #psf0 = psf0 - bg
+    #     #img = img - bg
+    #     # TODO: CHANGE BACK TO np.mean(psf0[:100, :100, :3], axis=(0, 1))
+    #     # bg_channels = np.mean(psf0[:100, :100, :3], axis=(0, 1))
+    #     # psf0 = psf0[:, :, :3] - bg_channels
         
-        # bg_channels = np.mean(psf0[:100, :100], axis=(0, 1))
-        # psf0 = psf0 - bg_channels
-        print("Background channels: ", bg_channels.shape)
-        print(np.max(bg_channels), np.min(bg_channels))
-        img = img - bg_channels
-
-    else:
-        bg = np.mean(psf0[:100, :100])
-        psf0 = psf0 - bg
-        img = img - bg
+    #     # # bg_channels = np.mean(psf0[:100, :100], axis=(0, 1))
+    #     # # psf0 = psf0 - bg_channels
+    #     # print("Background channels: ", bg_channels.shape)
+    #     # print(np.max(bg_channels), np.min(bg_channels))
+    #     # img = img - bg_channels
+    # else:
+    #     bg = np.mean(psf0[:100, :100])
+    #     psf0 = psf0 - bg
+    #     img = img - bg
     #downsample images 
     ds = f
     psf = cv2.resize(psf0, (psf0.shape[1]//ds, psf0.shape[0]//ds))

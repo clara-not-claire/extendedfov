@@ -3,6 +3,9 @@ global device
 device= sys.argv[1]
 sys.path.append('./recon/helper_functions/')
 sys.path.append('./recon/fista_files/')
+sys.path.append('../')
+
+from extended_fov_helpers import center_crop
 
 if device == 'GPU':
     import cupy as np
@@ -182,18 +185,26 @@ class fista_spectral_numpy():
                 else:
                     out_img = self.crop(xk).squeeze()
                     uncropped_out = np.copy(xk).squeeze()
+                    # TODO: FOR LENSLESS DESIGN ONLY
+                    uncropped_out = center_crop(uncropped_out, (96, 96))
                 
                 plt.figure(figsize = (13,3))
                 plt.subplot(1,3,1), plt.imshow(np.clip((out_img/numpy.max(out_img)),0,1)); plt.title('Reconstruction')
                 plt.subplot(1,3,2), plt.imshow(np.clip((uncropped_out/np.max(uncropped_out)),0,1)); plt.title('Uncropped Reconstruction')
                 # Add dashed lines to indicate cropping
-                plt.axhline(self.py, color='red', linestyle='--')
-                plt.axhline(self.DIMS0 + self.py, color='red', linestyle='--')
-                plt.axvline(self.px, color='red', linestyle='--')
-                plt.axvline(self.DIMS1 + self.px, color='red', linestyle='--')
+                # plt.axhline(self.py, color='red', linestyle='--')
+                # plt.axhline(self.DIMS0 + self.py, color='red', linestyle='--')
+                # plt.axvline(self.px, color='red', linestyle='--')
+                # plt.axvline(self.DIMS1 + self.px, color='red', linestyle='--')
+
+                plt.axhline(16, color='red', linestyle='--')
+                plt.axhline(self.DIMS0 + 16, color='red', linestyle='--')
+                plt.axvline(16, color='red', linestyle='--')
+                plt.axvline(self.DIMS1 + 16, color='red', linestyle='--')
                 plt.subplot(1,3,3), plt.plot(llist); plt.title('Loss') # plt.ylim(0, 250)
                 plt.show()
                 self.out_img = out_img
         xout = self.crop(xk) 
-        xnocrop = np.copy(xk)
+        xnocrop = center_crop(np.copy(xk), (96, 96)) 
+        # xnocrop = np.copy(xk)
         return [xout, xnocrop], llist
